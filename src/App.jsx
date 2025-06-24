@@ -8,6 +8,14 @@ import AvailablePlaces from './components/AvailablePlaces.jsx';
 import { fetchUserPlaces, updateUserPlaces } from './http.js';
 import ErrorPage from './components/Error.jsx';
 
+// To run app locally:
+// Frontend:
+// 1. Run `npm install` to install dependencies
+// 2. Run `npm run dev` to start the development server
+// Backend:
+// 1. cd into the `backend` directory
+// 2. Run `npm install` to install backend dependencies
+// 3. Run `node app.js` to start the backend server
 function App() {
   const selectedPlace = useRef();
   const [userPlaces, setUserPlaces] = useState([]);
