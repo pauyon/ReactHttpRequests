@@ -6,13 +6,13 @@ import DeleteConfirmation from './components/DeleteConfirmation.jsx';
 import logoImg from './assets/logo.png';
 import AvailablePlaces from './components/AvailablePlaces.jsx';
 import { updateUserPlaces } from './http.js';
+import ErrorPage from './components/Error.jsx';
 
 function App() {
   const selectedPlace = useRef();
-
   const [userPlaces, setUserPlaces] = useState([]);
-
   const [modalIsOpen, setModalIsOpen] = useState(false);
+  const [errorUpdatingPlaces, setErrorUpdatingPlaces] = useState(null);
 
   function handleStartRemovePlace(place) {
     setModalIsOpen(true);
@@ -24,6 +24,12 @@ function App() {
   }
 
   async function handleSelectPlace(selectedPlace) {
+    // Alternatively, you can call the updateUserPlaces function directly here
+    // and it will wait until the call is finished before calling setUserPlaces
+    // However, this will make the application appear frozen or like it's not responding,
+    // so adding a loading animaiton would let the user know it's doing something.
+    // await updateUserPlaces([...userPlaces, selectedPlace]);
+
     setUserPlaces((prevPickedPlaces) => {
       if (!prevPickedPlaces) {
         prevPickedPlaces = [];
@@ -37,7 +43,8 @@ function App() {
     try {
       await updateUserPlaces([...userPlaces, selectedPlace]);
     } catch (error) {
-      //..
+      setUserPlaces(userPlaces);
+      setErrorUpdatingPlaces( {message: error.message || 'Failed to update places.'} );
     }
   }
 
@@ -49,8 +56,19 @@ function App() {
     setModalIsOpen(false);
   }, []);
 
+  function handleError() {
+    setErrorUpdatingPlaces(null);
+  }
+
   return (
     <>
+      <Modal open={errorUpdatingPlaces} onClose={handleError}>
+        {errorUpdatingPlaces && (<ErrorPage 
+          title='An error occurred!'
+          message={errorUpdatingPlaces.message}
+          onConfirm={handleError} />
+        )}
+      </Modal>
       <Modal open={modalIsOpen} onClose={handleStopRemovePlace}>
         <DeleteConfirmation
           onCancel={handleStopRemovePlace}
