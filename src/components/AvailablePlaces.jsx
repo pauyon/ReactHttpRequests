@@ -1,51 +1,28 @@
-import { useState, useEffect } from 'react';
-
 import Places from './Places.jsx';
 import ErrorPage from './Error.jsx';
 import { sortPlacesByDistance } from '../loc.js';
 import { fetchAvailablePlaces } from '../http.js';
+import { useFetch } from '../hooks/useFetch.js';
+
+async function fetchSortedPlaces() {
+  const places = await fetchAvailablePlaces();
+  
+  return new Promise((resolve) => {
+    navigator.geolocation.getCurrentPosition((position) => {
+      const sortedPlaces = sortPlacesByDistance(
+        places,
+        position.coords.latitude,
+        position.coords.longitude
+      );
+
+      resolve(sortedPlaces);
+    });
+  });
+}
+
 
 export default function AvailablePlaces({ onSelectPlace }) {
-  const [isLoading, setIsLoading] = useState(false);
-  const [availablePlaces, setAvailablePlaces] = useState([]);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    async function fetchPlaces() {
-      setIsLoading(true);
-
-      try {
-        const places = await fetchAvailablePlaces();
-
-        navigator.geolocation.getCurrentPosition((position) => {
-          const sortedPlaces = sortPlacesByDistance(
-            places,
-            position.coords.latitude,
-            position.coords.longitude
-          );
-          setAvailablePlaces(sortedPlaces);
-        });
-
-      } catch (error) {
-        setError(error);
-      }
-      finally {
-        setIsLoading(false);
-      }
-
-    }
-
-    fetchPlaces();
-
-    // Longway of fetching data without async/await
-    // You cant set functions as async if they are components or
-    // on the useEffect method itself. Only on user defined functions.
-    // fetch('http://localhost:3000/places').then((response) => {
-    //   return response.json()
-    // }).then((resData) => {
-    //   setAvailablePlaces(resData.places);
-    // });
-  }, []);
+  const {isLoading, data: availablePlaces, error} = useFetch(fetchSortedPlaces, []);
 
   if (error) {
     return <ErrorPage title="An error ocurred!" message={error.message} />;

@@ -7,6 +7,7 @@ import logoImg from './assets/logo.png';
 import AvailablePlaces from './components/AvailablePlaces.jsx';
 import { fetchUserPlaces, updateUserPlaces } from './http.js';
 import ErrorPage from './components/Error.jsx';
+import { useFetch } from './hooks/useFetch.js';
 
 // To run app locally:
 // Frontend:
@@ -18,29 +19,14 @@ import ErrorPage from './components/Error.jsx';
 // 3. Run `node app.js` to start the backend server
 function App() {
   const selectedPlace = useRef();
-  const [userPlaces, setUserPlaces] = useState([]);
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [errorUpdatingPlaces, setErrorUpdatingPlaces] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    async function fetchPlaces(){
-      setIsLoading(true);
-      try {
-        const userPlaces = await fetchUswerPlaces();
-        setUserPlaces(userPlaces);
-      }catch (error) {
-        setError(error);
-        setErrorUpdatingPlaces( {message: error.message || 'Failed to fetch user places'} );
-      }
-      finally{
-        setIsLoading(false);
-      }
-    }
-
-    fetchPlaces();
-  }, []);
+  const { 
+    isLoading, 
+    data: userPlaces, 
+    setData: setUserPlaces,
+    error 
+  } = useFetch(fetchUserPlaces, []);
 
   function handleStartRemovePlace(place) {
     setModalIsOpen(true);
@@ -89,7 +75,7 @@ function App() {
     }
 
     setModalIsOpen(false);
-  }, []);
+  }, [userPlaces]);
 
   function handleError() {
     setErrorUpdatingPlaces(null);
